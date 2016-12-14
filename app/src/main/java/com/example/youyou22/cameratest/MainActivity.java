@@ -1,7 +1,9 @@
 package com.example.youyou22.cameratest;
 
+import android.content.DialogInterface;
 import android.hardware.Camera;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,7 +22,6 @@ import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.users.FullAccount;
-
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -72,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height ){
-
                 Camera.Parameters parameters = camera_.getParameters();
                 parameters.setPreviewSize(640,480);
 
@@ -98,14 +98,28 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    try{
-                        InputStream is = new FileInputStream(Environment.getExternalStorageDirectory().getPath() + "/camera_test.jpg");
-                        FileMetadata metadata = client.files().uploadBuilder(Environment.getExternalStorageDirectory().getPath() + "/camera_test.jpg").uploadAndFinish(is);
-                        is.close();
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-
+                    AlertDialog.Builder alertDig = new AlertDialog.Builder(getContext());
+                    alertDig.setTitle("確認");
+                    alertDig.setMessage("DropBoxへ追加しますか？");
+                    // OKボタンが押されたときのコールバック
+                    alertDig.setPositiveButton("OK",new DialogInterface.OnClickListener(){
+                       public void onClick(DialogInterface dialog, int which){
+                           try{
+                               // Dropboxへデータ保存
+                               InputStream is = new FileInputStream(Environment.getExternalStorageDirectory().getPath() + "/camera_test.jpg");
+                               FileMetadata metadata = client.files().uploadBuilder(Environment.getExternalStorageDirectory().getPath() + "/camera_test.jpg").uploadAndFinish(is);
+                               is.close();
+                           } catch (Exception e){
+                               e.printStackTrace();
+                           }
+                       }
+                    });
+                    // Cancelボタンが押されたときのコールバック
+                    alertDig.setNegativeButton("Cancel",new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int which){
+                            // なにもしない
+                        }
+                    });
                     camera.startPreview();
                 }
             }
